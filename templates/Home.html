@@ -1,0 +1,215 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>RBAC</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href={% url "home" %}>HOME</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        {% if user.is_authenticated and user.role == "Admin" %}
+                        <li class="nav-item">
+                            <span class="navbar-text fw-bold text-center">Welcome Admin,  {{ user.username }} </span>
+                        </li>
+                        {% elif user.is_authenticated and user.role == "Manager"  %} 
+                        <li class="nav-item">
+                            <span class="navbar-text fw-bold text-center">Welcome Manager, {{ user.username }}</span>
+                        </li>
+                        {% elif user.is_authenticated and user.role == "Employee"  %} 
+                        <li class="nav-item">
+                            <span class="navbar-text fw-bold text-center">Welcome Employee, {{ user.username }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href={% url "login" %}>Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href={% url "register" %}>Register</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href={% url "logout" %}>Logout</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link">
+                                <img src="{{ user.profile_picture.url }}" alt="User Profile" class="img-fluid rounded-circle" style="width: 30px; height: 30px;">
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <script>
+            {% for message in messages %}
+                var backgroundColor = '';
+                if ('{{ message.tags }}' === 'success') {
+                    backgroundColor = 'green'; 
+                } else if ('{{ message.tags }}' === 'error') {
+                    backgroundColor = 'red';    
+                } else {
+                    backgroundColor = '#28a745'; 
+                }
+        
+                Toastify({
+                    text: "{{ message }}",
+                    duration: 3000,  
+                    gravity: "top",  
+                    position: "right",  
+                    backgroundColor: backgroundColor, 
+                    stopOnFocus: true  
+                }).showToast();
+            {% endfor %}
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        {% block main %}
+                <div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editProjectModalLabel">Edit Project</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'edit_project' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="editProjectId" name="project_id" value="">
+                                    <div class="mb-3">
+                                        <label for="editProjectName" class="form-label">Project Name</label>
+                                        <input type="text" class="form-control" id="editProjectName" name="project_name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editProjectImage" class="form-label">Project Image</label>
+                                        <input type="file" class="form-control" id="editProjectImage" name="project_image">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal for Adding a Project -->
+            <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{% url 'add_project' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="addProjectName" class="form-label">Project Name</label>
+                                    <input type="text" class="form-control" id="addProjectName" name="project_name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="addProjectImage" class="form-label">Project Image</label>
+                                    <input type="file" class="form-control" id="addProjectImage" name="project_image" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Add Project</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+        <div class="container mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-center mb-0">Projects</h2>
+
+                <a class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+                    Add Project
+                </a>
+            </div>
+            <div class="row">
+                {% for project in Projects %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-lg border-0" style="max-width: 18rem; transition: transform 0.3s ease-in-out;">
+                        <img src="{{ project.project_image.url }}" class="card-img-top img-fluid rounded-top" alt="{{ project.project_name }}" style="height: 150px; object-fit: cover;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title mb-2">{{ project.project_name }}</h5>
+                            
+                            <div class="d-flex justify-content-center mt-3 ">
+                                <a href="#" class="btn  btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#editProjectModal" 
+                                    onclick="openEditModal({{ project.id }}, '{{ project.project_name }}', '{{ project.project_image.url }}')">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>Edit</span>
+                                </a>
+                            
+                                <form method="post" action="{% url 'delete_project' project.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn  btn-sm d-flex align-items-center gap-1">
+                                        <i class="bi bi-trash3"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+                {% empty %}
+                <p>No projects available.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% else %}
+
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <p class="lead text-muted">
+                        <strong>Welcome to Our Project Management Platform!</strong>
+                    </p>
+                    <p class="fs-5 text-muted">
+                        A user-friendly tool designed to help you organize, manage, and collaborate on projects efficiently. Whether you're an admin, manager, or employee, this platform makes project tracking seamless with features like project creation, editing, and easy collaboration with your team.
+                    </p>
+                    <p class="fs-5 text-muted">
+                        Get started now and stay on top of your tasks!
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        {% endif %}
+
+        <script>
+            function openEditModal(projectId, projectName, projectDescription, projectImage) {
+                document.getElementById('editProjectId').value = projectId;
+                document.getElementById('editProjectName').value = projectName;
+                document.getElementById('editProjectDescription').value = projectDescription;
+                
+                var imageElement = document.getElementById('editProjectImage');
+                if (projectImage) {
+                    imageElement.setAttribute('data-bs-original-src', projectImage);  
+                }
+            }
+        </script>
+        {% endblock main %}
+    </body>
+</html>
